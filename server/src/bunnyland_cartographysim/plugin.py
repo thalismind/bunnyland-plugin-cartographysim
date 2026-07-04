@@ -26,7 +26,7 @@ from .landmarks import landmark_fragments
 from .mapping import map_fragments
 from .travel import TravelPlanComponent
 
-PLUGIN_ID = "bunnyland_cartographysim"
+PLUGIN_ID = "bunnyland.cartographysim"
 
 
 def plugin() -> Plugin:
