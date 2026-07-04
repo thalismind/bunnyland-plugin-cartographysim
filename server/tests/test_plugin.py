@@ -42,7 +42,7 @@ def test_plugin_declares_its_fragments_and_hook():
 
 def test_plugin_version():
     plugin = load_modules(["bunnyland_cartographysim"])[0]
-    assert plugin.version == "0.1.0"
+    assert plugin.version == "0.2.0"
 
 
 def test_plugin_applies_and_registers_verbs():
