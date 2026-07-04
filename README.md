@@ -5,7 +5,7 @@
 Out-of-tree [Bunnyland](https://github.com/thalismind/bunnyland-server) plugin that turns the
 world graph into something you can **map, name, and navigate**. It is the quality-of-life
 pack every other expansion quietly benefits from — anglers chart fishing holes, bards
-remember venues, ghost hunters map the haunted wing.
+remember venues, spectral investigators map the haunted wing.
 
 Five mechanics ship together:
 
