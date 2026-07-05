@@ -22,6 +22,30 @@ Five mechanics ship together:
 - **Fog of war** — unmapped rooms render as "uncharted", and the map shows which exits lead
   off its edge into the frontier.
 
+### v2 — Explore, Chart, Share
+
+Four mechanics turn a personal map into a party asset and tie cartography into the wider world:
+
+- **Shareable maps** (headline) — a `share-map` verb hands your field map's charts to another
+  character standing with you, modelled as a `SharedWith` **typed edge** from the map to the
+  recipient. A party pools one explorer's survey work instead of each re-walking the ground.
+- **Annotations** — an `annotate-map` verb pins a categorised note ("danger", "cache", ...) to a
+  charted room; notes live on the map item (`MapAnnotationsComponent`), so a shared map carries
+  them too.
+- **Region surveys** — a `survey-region` verb summarises the charted neighbourhood (rooms, biomes,
+  landmarks, regions) within a radius over the charted graph, stamps a `LastSurveyComponent`, and
+  journals the survey to the **core memory** store so it is recall-able later. The `RegionWorldgenHook`
+  names the region each generated room belongs to.
+- **Expeditions** — a `launch-expedition` verb is fast-travel's longer-range cousin; a character
+  leading a **petsim mount** covers two charted hops per tick instead of one.
+
+**Synergy (optional, never required).** Cartography **publishes** the `SharedWith` edge and its
+events for anyone to read, and **consumes** two partner surfaces when present: expedition packs
+(aqua / lore / cryptid) whose discovery events it charts onto the discoverer's map, and petsim
+mounts that speed expeditions. Absent partners simply disable the feature (with a logged warning).
+Cartography also registers an **`uncharted_region` storyteller incident** at a map's frontier so
+world pressure lures explorers onward.
+
 This repo intentionally keeps all cartography work outside the main `bunnyland-server` repo.
 
 ## Layout
@@ -45,6 +69,18 @@ The plugin exposes `bunnyland_cartographysim.bunnyland_plugins()` and contribute
   shrines) onto generated rooms by biome/tags.
 - `name-landmark` and `travel-to` - verbs for the holder (human or AI).
 - `spawn_field_map`, `spawn_compass` - spawn factories.
+
+v2 additions:
+
+- `MapAnnotationsComponent`, `LastSurveyComponent`, `ExpeditionPlanComponent`, `RegionComponent`,
+  and the `SharedWith` typed edge.
+- `ExpeditionConsequence` (walks expeditions, mount-aware) and `UnchartedRegionIncidentConsequence`
+  (stages the `uncharted_region` storyteller incident).
+- `SurveyMemoryReactor` (journals surveys to core memory) and `ExpeditionDiscoveryReactor` (charts
+  partner-pack discoveries; dormant without a partner).
+- `share_fragments`, `annotation_fragments`, `survey_fragments`, `region_fragments` prompt providers
+  and the `RegionWorldgenHook`.
+- `share-map`, `annotate-map`, `survey-region`, `launch-expedition` - the v2 verbs.
 
 ## Running
 
