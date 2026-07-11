@@ -37,9 +37,7 @@ DISCOVERY_EVENT_SOURCES: tuple[tuple[str, str], ...] = (
 )
 
 #: Partner packs that publish a mount marker component ``(module, class)``.
-MOUNT_COMPONENT_SOURCES: tuple[tuple[str, str], ...] = (
-    ("bunnyland_petsim", "MountComponent"),
-)
+MOUNT_COMPONENT_SOURCES: tuple[tuple[str, str], ...] = (("bunnyland_petsim", "MountComponent"),)
 
 
 def _resolve_imports(sources: tuple[tuple[str, str], ...]) -> tuple[type, ...]:

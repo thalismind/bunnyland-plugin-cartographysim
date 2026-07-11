@@ -12,6 +12,7 @@ from bunnyland.core import (
     spawn_entity,
 )
 from bunnyland.core.ecs import replace_component
+from bunnyland.core.events import DomainEvent, event_base
 from pydantic.dataclasses import dataclass
 from relics import Component
 
@@ -68,9 +69,7 @@ def test_resolvers_default_to_absent_partners():
 
 
 def test_resolvers_accept_explicit_sources():
-    resolved = resolve_discovery_event_types(
-        (("bunnyland_cartographysim", "MapComponent"),)
-    )
+    resolved = resolve_discovery_event_types((("bunnyland_cartographysim", "MapComponent"),))
     assert resolved == (MapComponent,)
 
 
@@ -121,10 +120,12 @@ def test_expedition_pace_doubles_when_mounted():
 # -- discovery reactor ------------------------------------------------------------------
 
 
-class _FakeDiscoveryEvent:
-    def __init__(self, location_id, actor_id):
-        self.location_id = location_id
-        self.actor_id = actor_id
+class _FakeDiscoveryEvent(DomainEvent):
+    location_id: str
+
+
+def _discovery_event(location_id, actor_id):
+    return _FakeDiscoveryEvent(**event_base(0), location_id=location_id, actor_id=actor_id)
 
 
 def _reactor_with_fake_event(world):
@@ -154,7 +155,7 @@ def test_reactor_charts_a_discovered_room():
 
     reactor = _reactor_with_fake_event(actor.world)
     record = reactor.chart_discovery(
-        _FakeDiscoveryEvent(location_id=str(found.id), actor_id=str(discoverer.id))
+        _discovery_event(location_id=str(found.id), actor_id=str(discoverer.id))
     )
     assert record is not None
     assert str(found.id) in field_map.get_component(MapComponent).charted_ids()
@@ -172,7 +173,7 @@ def test_reactor_is_idempotent_for_an_already_charted_room():
 
     reactor = _reactor_with_fake_event(actor.world)
     record = reactor.chart_discovery(
-        _FakeDiscoveryEvent(location_id=str(found.id), actor_id=str(discoverer.id))
+        _discovery_event(location_id=str(found.id), actor_id=str(discoverer.id))
     )
     assert record == record_for_room(found)
     # No churn: same charted set.
@@ -192,9 +193,7 @@ def test_reactor_subscribe_wires_the_bus():
     import asyncio
 
     asyncio.run(
-        actor.bus.publish(
-            _FakeDiscoveryEvent(location_id=str(found.id), actor_id=str(discoverer.id))
-        )
+        actor.bus.publish(_discovery_event(location_id=str(found.id), actor_id=str(discoverer.id)))
     )
     assert str(found.id) in field_map.get_component(MapComponent).charted_ids()
 
@@ -209,11 +208,11 @@ def test_reactor_ignores_bad_ids_and_shapes():
     reactor = _reactor_with_fake_event(actor.world)
 
     # Unparseable ids.
-    assert reactor.chart_discovery(_FakeDiscoveryEvent("???", str(discoverer.id))) is None
-    assert reactor.chart_discovery(_FakeDiscoveryEvent(str(found.id), "???")) is None
+    assert reactor.chart_discovery(_discovery_event("???", str(discoverer.id))) is None
+    assert reactor.chart_discovery(_discovery_event(str(found.id), "???")) is None
     # Missing entities.
-    assert reactor.chart_discovery(_FakeDiscoveryEvent("entity_9999", str(discoverer.id))) is None
-    assert reactor.chart_discovery(_FakeDiscoveryEvent(str(found.id), "entity_9999")) is None
+    assert reactor.chart_discovery(_discovery_event("entity_9999", str(discoverer.id))) is None
+    assert reactor.chart_discovery(_discovery_event(str(found.id), "entity_9999")) is None
 
 
 def test_reactor_ignores_non_room_locations():
@@ -224,12 +223,7 @@ def test_reactor_ignores_non_room_locations():
     discoverer.add_relationship(Contains(mode=ContainmentMode.INVENTORY), field_map.id)
     not_a_room = spawn_entity(actor.world, [IdentityComponent(name="rock", kind="item")])
     reactor = _reactor_with_fake_event(actor.world)
-    assert (
-        reactor.chart_discovery(
-            _FakeDiscoveryEvent(str(not_a_room.id), str(discoverer.id))
-        )
-        is None
-    )
+    assert reactor.chart_discovery(_discovery_event(str(not_a_room.id), str(discoverer.id))) is None
 
 
 def test_reactor_ignores_a_discoverer_without_a_map():

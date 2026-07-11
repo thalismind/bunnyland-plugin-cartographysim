@@ -19,7 +19,7 @@ from .annotations import (
 from .commands import CARTOGRAPHY_ACTION_DEFINITIONS, CARTOGRAPHY_ACTION_HANDLERS
 from .compass import compass_fragments
 from .components import CompassComponent, LandmarkComponent, MapComponent
-from .enrichment import CartographyWorldgenHook
+from .enrichment import CartographyGenerationEnricher
 from .events import (
     LandmarkNamedEvent,
     TravelArrivedEvent,
@@ -36,7 +36,7 @@ from .fog import fog_fragments
 from .install import install_cartographysim
 from .landmarks import landmark_fragments
 from .mapping import map_fragments
-from .regions import RegionComponent, RegionWorldgenHook, region_fragments
+from .regions import LocatedInRegion, RegionGenerationEnricher, region_fragments
 from .sharing import MapSharedEvent, SharedWith, share_fragments
 from .surveys import LastSurveyComponent, RegionSurveyedEvent, survey_fragments
 from .travel import TravelPlanComponent
@@ -69,9 +69,8 @@ def plugin() -> Plugin:
                 MapAnnotationsComponent,
                 LastSurveyComponent,
                 ExpeditionPlanComponent,
-                RegionComponent,
             ),
-            edges=(SharedWith,),
+            edges=(LocatedInRegion, SharedWith),
         ),
         commands=CommandContribution(
             action_handlers=CARTOGRAPHY_ACTION_HANDLERS,
@@ -103,7 +102,10 @@ def plugin() -> Plugin:
                 survey_fragments,
                 region_fragments,
             ),
-            worldgen_hooks=(CartographyWorldgenHook, RegionWorldgenHook),
+            generation_enrichers=(
+                CartographyGenerationEnricher(),
+                RegionGenerationEnricher(),
+            ),
         ),
     )
 

@@ -53,9 +53,7 @@ def _map_charting(world, character, rooms):
     """Give ``character`` a held field map already charting every room in ``rooms``."""
     field_map = spawn_field_map(world)
     character.add_relationship(Contains(mode=ContainmentMode.INVENTORY), field_map.id)
-    replace_component(
-        field_map, MapComponent(rooms=tuple(record_for_room(room) for room in rooms))
-    )
+    replace_component(field_map, MapComponent(rooms=tuple(record_for_room(room) for room in rooms)))
     return field_map
 
 

@@ -1,25 +1,18 @@
-"""Named regions: v2 worldgen enrichment that groups generated rooms into regions.
-
-Where v1's worldgen hook pins single-room *landmarks*, this v2 hook paints every generated
-room with the broader **region** it belongs to, derived deterministically from the room's
-biome. Regions give surveys something to name ("the Whispering Wilds") and give a shared map a
-sense of place. The core generator stays ignorant of this plugin — the hook only reacts to
-``RoomGeneratedEvent`` on the bus, and rooms that already carry a region are left untouched.
-"""
+"""Named region entities and room-to-region relationships."""
 
 from __future__ import annotations
 
-from bunnyland.core import RoomComponent
-from bunnyland.core.ecs import parse_entity_id, replace_component
-from bunnyland.core.events import RoomGeneratedEvent
-from bunnyland.core.world_actor import WorldActor
-from bunnyland.prompts.context import ComponentPromptContext
+from bunnyland.core import IdentityComponent, RegionComponent
+from bunnyland.core.generation import (
+    GenerationChild,
+    GenerationDelta,
+    GenerationRequest,
+)
 from pydantic.dataclasses import dataclass
-from relics import Component
+from relics import Edge
 
 from .spatial import room_of
 
-#: Deterministic ``biome -> region name`` map; unlisted biomes fall back to a titled name.
 REGION_NAMES: dict[str, str] = {
     "forest": "the Whispering Wilds",
     "desert": "the Sunscoured Waste",
@@ -33,18 +26,12 @@ REGION_NAMES: dict[str, str] = {
 
 
 @dataclass(frozen=True)
-class RegionComponent(Component):
-    """The named region a room belongs to."""
-
-    name: str
-    biome: str = "unknown"
-
-    def prompt_fragments(self, ctx: ComponentPromptContext) -> tuple[str, ...]:
-        return (f"This lies within {self.name}.",)
+class LocatedInRegion(Edge):
+    """A room belongs to a generated region entity."""
 
 
 def region_name_for(biome: str) -> str:
-    """The deterministic region name for ``biome``."""
+    """Return the deterministic region name for ``biome``."""
     known = REGION_NAMES.get(biome.casefold())
     if known is not None:
         return known
@@ -52,23 +39,56 @@ def region_name_for(biome: str) -> str:
     return f"the {label.title()} Reaches"
 
 
-class RegionWorldgenHook:
-    """Paint each generated room with the region its biome implies."""
+class RegionGenerationEnricher:
+    """Create one shared region entity for generated rooms of each biome."""
 
-    def subscribe(self, actor: WorldActor) -> None:
-        self._actor = actor
-        actor.bus.subscribe(RoomGeneratedEvent, self._on_room)
+    capabilities: tuple[str, ...] = ()
 
-    def _on_room(self, event: RoomGeneratedEvent) -> None:
-        parsed = parse_entity_id(event.entity_id)
-        if parsed is None or not self._actor.world.has_entity(parsed):
-            return
-        room = self._actor.world.get_entity(parsed)
-        if not room.has_component(RoomComponent) or room.has_component(RegionComponent):
-            return
-        replace_component(
-            room, RegionComponent(name=region_name_for(event.biome), biome=event.biome)
+    def applies(self, request: GenerationRequest) -> bool:
+        return request.entity_kind == "room"
+
+    def enrich(self, request: GenerationRequest) -> GenerationDelta:
+        room = next(
+            (
+                component
+                for component in request.context.get("base_components", ())
+                if component.__class__.__name__ == "RoomComponent"
+            ),
+            None,
         )
+        biome = str(getattr(room, "biome", "unknown")) or "unknown"
+        name = region_name_for(biome)
+        return GenerationDelta(
+            children=(
+                GenerationChild(
+                    request=GenerationRequest(
+                        entity_kind="region",
+                        description=name,
+                        source_seed=request.source_seed,
+                        source_key=f"region:{biome.casefold()}",
+                    ),
+                    parent_edge=LocatedInRegion(),
+                    components=(
+                        IdentityComponent(name=name, kind="region"),
+                        RegionComponent(name=name, climate=biome),
+                    ),
+                    singleton_key=f"cartography.region:{biome.casefold()}",
+                ),
+            )
+        )
+
+
+def _region_entity(world, room):
+    relationships = room.get_relationships(LocatedInRegion)
+    if not relationships:
+        return None
+    region_id = relationships[0][1]
+    if not world.has_entity(region_id):
+        return None
+    region = world.get_entity(region_id)
+    if not region.has_component(RegionComponent):
+        return None
+    return region
 
 
 def region_fragments(world, character) -> list[str]:
@@ -76,16 +96,19 @@ def region_fragments(world, character) -> list[str]:
     if character is None:
         return []
     room = room_of(world, character.id)
-    if room is None or not room.has_component(RegionComponent):
+    if room is None:
         return []
-    ctx = ComponentPromptContext.for_entity(world, character, room=room)
-    return list(room.get_component(RegionComponent).prompt_fragments(ctx))
+    region = _region_entity(world, room)
+    if region is None:
+        return []
+    component = region.get_component(RegionComponent)
+    return [f"This lies within {component.name}."]
 
 
 __all__ = [
+    "LocatedInRegion",
     "REGION_NAMES",
-    "RegionComponent",
-    "RegionWorldgenHook",
+    "RegionGenerationEnricher",
     "region_fragments",
     "region_name_for",
 ]

@@ -15,7 +15,7 @@ from bunnyland.core import IdentityComponent, RoomComponent
 from bunnyland.core.ecs import parse_entity_id, spawn_entity
 from bunnyland.core.edges import ContainmentMode, Contains
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
-from bunnyland.mechanics.storyteller import IncidentComponent, IncidentStartedEvent
+from bunnyland.foundation.storyteller.mechanics import IncidentComponent, IncidentStartedEvent
 from relics import Entity, World
 
 from .components import MapComponent

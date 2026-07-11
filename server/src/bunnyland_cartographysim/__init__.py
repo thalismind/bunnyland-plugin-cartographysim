@@ -32,7 +32,7 @@ from .connectors import (
     resolve_discovery_event_types,
     resolve_mount_component_types,
 )
-from .enrichment import CartographyWorldgenHook, classify_landmark
+from .enrichment import CartographyGenerationEnricher, classify_landmark
 from .events import (
     LandmarkNamedEvent,
     TravelArrivedEvent,
@@ -69,8 +69,8 @@ from .mapping import MappingConsequence, charted_exits, map_fragments, record_fo
 from .plugin import PLUGIN_ID, bunnyland_plugins, plugin
 from .prefabs import spawn_compass, spawn_field_map
 from .regions import (
-    RegionComponent,
-    RegionWorldgenHook,
+    LocatedInRegion,
+    RegionGenerationEnricher,
     region_fragments,
     region_name_for,
 )
@@ -130,7 +130,7 @@ __all__ = [
     "TRAVEL_ACTION_DEFINITIONS",
     "TRAVEL_ACTION_HANDLERS",
     "AnnotateMapHandler",
-    "CartographyWorldgenHook",
+    "CartographyGenerationEnricher",
     "ChartedExit",
     "ChartedRoom",
     "CompassComponent",
@@ -151,10 +151,10 @@ __all__ = [
     "MapSharedEvent",
     "MappingConsequence",
     "NameLandmarkHandler",
-    "RegionComponent",
+    "LocatedInRegion",
     "RegionSurvey",
     "RegionSurveyedEvent",
-    "RegionWorldgenHook",
+    "RegionGenerationEnricher",
     "ShareMapHandler",
     "SharedWith",
     "SurveyMemoryReactor",

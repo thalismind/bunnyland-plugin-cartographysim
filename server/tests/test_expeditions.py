@@ -253,9 +253,7 @@ def test_expedition_consequence_covers_two_hops_when_mounted():
     _map_charting(actor.world, traveller, (a, b, c))
     replace_component(
         traveller,
-        ExpeditionPlanComponent(
-            destination_id=str(c.id), route=(str(b.id), str(c.id)), pace=2
-        ),
+        ExpeditionPlanComponent(destination_id=str(c.id), route=(str(b.id), str(c.id)), pace=2),
     )
     events = ExpeditionConsequence().process(actor.world, EPOCH + 1)
     # Two hops in one tick -> arrives immediately.

@@ -18,6 +18,7 @@ from collections import deque
 
 from bunnyland.core.actions import ActionArgument, ActionDefinition
 from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.components import RegionComponent
 from bunnyland.core.ecs import parse_entity_id, replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility
 from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_character
@@ -27,7 +28,7 @@ from relics import Component, Entity, World
 
 from .components import LandmarkComponent, MapComponent
 from .holding import held_map_entity
-from .regions import RegionComponent
+from .regions import LocatedInRegion
 from .spatial import room_of
 
 #: Default and maximum survey radius (hops over the charted exit graph).
@@ -105,8 +106,11 @@ def survey_region(
             entity = world.get_entity(parsed)
             if entity.has_component(LandmarkComponent):
                 landmarks.append(entity.get_component(LandmarkComponent).name)
-            if entity.has_component(RegionComponent):
-                regions.append(entity.get_component(RegionComponent).name)
+            for _edge, region_id in entity.get_relationships(LocatedInRegion):
+                if world.has_entity(region_id):
+                    region = world.get_entity(region_id)
+                    if region.has_component(RegionComponent):
+                        regions.append(region.get_component(RegionComponent).name)
     biomes = tuple(sorted(biome_counts.items(), key=lambda item: (-item[1], item[0])))
     return RegionSurvey(
         origin_room_id=origin_id,

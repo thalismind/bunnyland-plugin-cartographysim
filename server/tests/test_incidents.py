@@ -8,7 +8,7 @@ from bunnyland.core import (
     spawn_entity,
 )
 from bunnyland.core.ecs import replace_component
-from bunnyland.mechanics.storyteller import IncidentComponent, IncidentStartedEvent
+from bunnyland.foundation.storyteller.mechanics import IncidentComponent, IncidentStartedEvent
 
 from bunnyland_cartographysim import (
     INCIDENT_KIND,

@@ -5,6 +5,7 @@ from bunnyland.core import (
     ContainmentMode,
     Contains,
     IdentityComponent,
+    RegionComponent,
     RoomComponent,
     WorldActor,
     spawn_entity,
@@ -18,8 +19,8 @@ from bunnyland_cartographysim import (
     ChartedRoom,
     LandmarkComponent,
     LastSurveyComponent,
+    LocatedInRegion,
     MapComponent,
-    RegionComponent,
     RegionSurvey,
     RegionSurveyedEvent,
     SurveyMemoryReactor,
@@ -110,7 +111,11 @@ def test_survey_region_collects_landmarks_and_regions():
     actor = WorldActor()
     a = _room(actor.world, title="A")
     a.add_component(LandmarkComponent(name="the Crossroads"))
-    a.add_component(RegionComponent(name="the Whispering Wilds", biome="forest"))
+    region = spawn_entity(
+        actor.world,
+        [RegionComponent(name="the Whispering Wilds", climate="forest")],
+    )
+    a.add_relationship(LocatedInRegion(), region.id)
     map_component = MapComponent(rooms=(_charted(a),))
 
     survey = survey_region(actor.world, map_component, str(a.id), radius=2)
@@ -121,9 +126,7 @@ def test_survey_region_collects_landmarks_and_regions():
 def test_survey_region_ignores_exits_to_uncharted_rooms():
     actor = WorldActor()
     a = _room(actor.world, title="A")
-    records = (
-        _charted(a, [ChartedExit(direction="north", to_room_id="entity_9999")]),
-    )
+    records = (_charted(a, [ChartedExit(direction="north", to_room_id="entity_9999")]),)
     survey = survey_region(actor.world, MapComponent(rooms=records), str(a.id), radius=3)
     assert set(survey.room_ids) == {str(a.id)}
 
