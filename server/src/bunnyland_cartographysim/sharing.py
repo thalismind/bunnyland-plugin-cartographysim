@@ -18,8 +18,8 @@ already shared -> apply.
 from __future__ import annotations
 
 from bunnyland.core import CharacterComponent
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.events import DomainEvent, EventVisibility
 from bunnyland.core.handlers import (
     HandlerContext,
@@ -144,7 +144,7 @@ SHARE_MAP_DEF = ActionDefinition(
     title="Share map",
     description="Share your field map with another character here, granting them your charts.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={
         "recipient_id": ActionArgument(
             title="Recipient",

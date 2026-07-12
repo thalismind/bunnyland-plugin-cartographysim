@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility
 from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_character
@@ -133,8 +133,8 @@ ANNOTATE_MAP_DEF = ActionDefinition(
     command_type="annotate-map",
     title="Annotate map",
     description="Pin a categorised note to a charted room on your field map.",
-    lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    lane=Lane.FOCUS,
+    cost=effort_cost(focus=ActionEffort.ROUTINE),
     arguments={
         "note": ActionArgument(
             title="Note",

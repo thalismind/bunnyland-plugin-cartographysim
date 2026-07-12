@@ -15,8 +15,8 @@ from __future__ import annotations
 
 from collections import deque
 
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import contents, parse_entity_id, replace_component
 from bunnyland.core.edges import ContainmentMode, Contains, ExitTo
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
@@ -213,7 +213,7 @@ TRAVEL_TO_DEF = ActionDefinition(
     title="Travel to",
     description="Fast-travel to a room you have already charted, along known exits.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={
         "destination_id": ActionArgument(
             title="Destination",

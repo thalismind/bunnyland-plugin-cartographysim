@@ -16,8 +16,8 @@ from __future__ import annotations
 
 from collections import deque
 
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.components import RegionComponent
 from bunnyland.core.ecs import parse_entity_id, replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility
@@ -238,7 +238,7 @@ SURVEY_REGION_DEF = ActionDefinition(
     title="Survey region",
     description="Summarise the charted rooms around you and record the survey to memory.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.EXTENDED),
     arguments={
         "radius": ActionArgument(
             title="Radius",

@@ -13,8 +13,8 @@ destination -> already there -> uncharted destination -> unreachable destination
 
 from __future__ import annotations
 
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.edges import ContainmentMode, Contains, ExitTo
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
@@ -189,7 +189,7 @@ LAUNCH_EXPEDITION_DEF = ActionDefinition(
     title="Launch expedition",
     description="Set out for a charted room, faster while leading a mount.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.MAJOR),
     arguments={
         "destination_id": ActionArgument(
             title="Destination",

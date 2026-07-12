@@ -12,8 +12,8 @@ invalid argument -> apply.
 
 from __future__ import annotations
 
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import EventVisibility
 from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_character
@@ -62,7 +62,7 @@ NAME_LANDMARK_DEF = ActionDefinition(
     title="Name landmark",
     description="Pin a memorable name to the room you are in.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={
         "name": ActionArgument(
             title="Name",
