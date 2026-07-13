@@ -12,6 +12,7 @@ from bunnyland.core import (
 from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.handlers import HandlerContext
+from conftest import execute_handler
 
 from bunnyland_cartographysim import (
     AnnotateMapHandler,
@@ -70,7 +71,7 @@ def _cmd(character_id, payload):
 
 
 def _annotate(actor, character_id, payload):
-    return AnnotateMapHandler().execute(_ctx(actor), _cmd(character_id, payload))
+    return execute_handler(AnnotateMapHandler(), _ctx(actor), _cmd(character_id, payload))
 
 
 # -- value object -----------------------------------------------------------------------

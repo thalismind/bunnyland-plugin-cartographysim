@@ -14,9 +14,15 @@ from __future__ import annotations
 
 from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
 from bunnyland.core.commands import Lane, SubmittedCommand
-from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import EventVisibility
-from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_character
+from bunnyland.core.handlers import (
+    HandlerContext,
+    HandlerResult,
+    planned,
+    rejected,
+    require_character,
+)
+from bunnyland.core.mutations import MutationPlan, SetComponent
 from bunnyland.prompts.context import ComponentPromptContext
 from relics import Entity, World
 
@@ -42,8 +48,10 @@ class NameLandmarkHandler:
         if not name:
             return rejected("landmark name is required")
         shared = bool(command.payload.get("shared", True))
-        replace_component(room, LandmarkComponent(name=name, kind="marker", shared=shared))
-        return ok(
+        return planned(
+            MutationPlan(
+                (SetComponent(room.id, LandmarkComponent(name=name, kind="marker", shared=shared)),)
+            ),
             LandmarkNamedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,

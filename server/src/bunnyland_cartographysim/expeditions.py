@@ -18,7 +18,14 @@ from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.edges import ContainmentMode, Contains, ExitTo
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
-from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_character
+from bunnyland.core.handlers import (
+    HandlerContext,
+    HandlerResult,
+    planned,
+    rejected,
+    require_character,
+)
+from bunnyland.core.mutations import MutationPlan, SetComponent
 from pydantic.dataclasses import dataclass
 from relics import Component, Entity, World
 
@@ -89,11 +96,19 @@ class LaunchExpeditionHandler:
             return rejected("no known route to that destination")
 
         pace = expedition_pace(is_mounted(ctx.world, character))
-        replace_component(
-            character,
-            ExpeditionPlanComponent(destination_id=destination_id, route=tuple(route), pace=pace),
-        )
-        return ok(
+        return planned(
+            MutationPlan(
+                (
+                    SetComponent(
+                        character.id,
+                        ExpeditionPlanComponent(
+                            destination_id=destination_id,
+                            route=tuple(route),
+                            pace=pace,
+                        ),
+                    ),
+                )
+            ),
             ExpeditionStartedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.PRIVATE,

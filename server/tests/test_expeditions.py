@@ -13,6 +13,7 @@ from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.ecs import container_of, replace_component
 from bunnyland.core.edges import ExitTo
 from bunnyland.core.handlers import HandlerContext
+from conftest import execute_handler
 from pydantic.dataclasses import dataclass
 from relics import Component
 
@@ -82,8 +83,10 @@ def _cmd(character_id, payload):
 
 
 def _launch(actor, character_id, destination_id):
-    return LaunchExpeditionHandler().execute(
-        _ctx(actor), _cmd(character_id, {"destination_id": str(destination_id)})
+    return execute_handler(
+        LaunchExpeditionHandler(),
+        _ctx(actor),
+        _cmd(character_id, {"destination_id": str(destination_id)}),
     )
 
 

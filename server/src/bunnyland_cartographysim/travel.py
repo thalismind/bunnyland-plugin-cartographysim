@@ -20,7 +20,14 @@ from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import contents, parse_entity_id, replace_component
 from bunnyland.core.edges import ContainmentMode, Contains, ExitTo
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
-from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_character
+from bunnyland.core.handlers import (
+    HandlerContext,
+    HandlerResult,
+    planned,
+    rejected,
+    require_character,
+)
+from bunnyland.core.mutations import MutationPlan, SetComponent
 from pydantic.dataclasses import dataclass
 from relics import Component, Entity, World
 
@@ -107,10 +114,15 @@ class TravelToHandler:
         if not route:
             return rejected("no known route to that destination")
 
-        replace_component(
-            character, TravelPlanComponent(destination_id=destination_id, route=tuple(route))
-        )
-        return ok(
+        return planned(
+            MutationPlan(
+                (
+                    SetComponent(
+                        character.id,
+                        TravelPlanComponent(destination_id=destination_id, route=tuple(route)),
+                    ),
+                )
+            ),
             TravelStartedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.PRIVATE,

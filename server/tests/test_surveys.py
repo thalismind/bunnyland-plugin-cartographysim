@@ -13,6 +13,7 @@ from bunnyland.core import (
 from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.handlers import HandlerContext
+from conftest import execute_handler
 
 from bunnyland_cartographysim import (
     ChartedExit,
@@ -80,7 +81,9 @@ def _cmd(character_id, payload):
 
 
 def _survey(actor, character_id, payload=None):
-    return SurveyRegionHandler().execute(_ctx(actor), _cmd(character_id, payload or {}))
+    return execute_handler(
+        SurveyRegionHandler(), _ctx(actor), _cmd(character_id, payload or {})
+    )
 
 
 # -- BFS survey -------------------------------------------------------------------------

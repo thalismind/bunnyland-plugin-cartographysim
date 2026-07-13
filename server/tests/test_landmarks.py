@@ -11,6 +11,7 @@ from bunnyland.core import (
 )
 from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.handlers import HandlerContext
+from conftest import execute_handler
 
 from bunnyland_cartographysim import LandmarkComponent, NameLandmarkHandler, landmark_fragments
 
@@ -50,8 +51,8 @@ def test_name_landmark_pins_a_name_to_the_room():
     room = _room(actor.world)
     caster = _character(actor.world, room)
 
-    result = NameLandmarkHandler().execute(
-        _ctx(actor), _cmd(caster.id, {"name": "Traveller's Rest"})
+    result = execute_handler(
+        NameLandmarkHandler(), _ctx(actor), _cmd(caster.id, {"name": "Traveller's Rest"})
     )
 
     assert result.ok
@@ -66,7 +67,9 @@ def test_name_landmark_renames_an_existing_landmark():
     room.add_component(LandmarkComponent(name="Old Name"))
     caster = _character(actor.world, room)
 
-    result = NameLandmarkHandler().execute(_ctx(actor), _cmd(caster.id, {"name": "New Name"}))
+    result = execute_handler(
+        NameLandmarkHandler(), _ctx(actor), _cmd(caster.id, {"name": "New Name"})
+    )
 
     assert result.ok
     assert room.get_component(LandmarkComponent).name == "New Name"

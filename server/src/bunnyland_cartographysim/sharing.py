@@ -24,11 +24,12 @@ from bunnyland.core.events import DomainEvent, EventVisibility
 from bunnyland.core.handlers import (
     HandlerContext,
     HandlerResult,
-    ok,
+    planned,
     rejected,
     require_character,
     require_reachable_entity,
 )
+from bunnyland.core.mutations import AddEdge, MutationPlan
 from pydantic.dataclasses import dataclass
 from relics import Edge, Entity, World
 
@@ -102,11 +103,17 @@ class ShareMapHandler:
         if is_shared_with(map_entity, str(recipient_id)):
             return rejected("that map is already shared with them")
 
-        map_entity.add_relationship(
-            SharedWith(shared_by=str(sharer_id), since_epoch=ctx.epoch), recipient.id
-        )
         room = room_of(ctx.world, sharer_id)
-        return ok(
+        return planned(
+            MutationPlan(
+                (
+                    AddEdge(
+                        map_entity.id,
+                        recipient.id,
+                        SharedWith(shared_by=str(sharer_id), since_epoch=ctx.epoch),
+                    ),
+                )
+            ),
             MapSharedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,

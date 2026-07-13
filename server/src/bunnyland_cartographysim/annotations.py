@@ -16,9 +16,15 @@ from dataclasses import replace
 
 from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
 from bunnyland.core.commands import Lane, SubmittedCommand
-from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility
-from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_character
+from bunnyland.core.handlers import (
+    HandlerContext,
+    HandlerResult,
+    planned,
+    rejected,
+    require_character,
+)
+from bunnyland.core.mutations import MutationPlan, SetComponent
 from pydantic.dataclasses import dataclass
 from relics import Component, Entity, World
 
@@ -99,8 +105,15 @@ class AnnotateMapHandler:
             if map_entity.has_component(MapAnnotationsComponent)
             else MapAnnotationsComponent()
         )
-        replace_component(map_entity, replace(existing, notes=existing.with_note(note).notes))
-        return ok(
+        return planned(
+            MutationPlan(
+                (
+                    SetComponent(
+                        map_entity.id,
+                        replace(existing, notes=existing.with_note(note).notes),
+                    ),
+                )
+            ),
             MapAnnotatedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.PRIVATE,

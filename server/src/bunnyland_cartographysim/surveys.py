@@ -19,9 +19,16 @@ from collections import deque
 from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
 from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.components import RegionComponent
-from bunnyland.core.ecs import parse_entity_id, replace_component
+from bunnyland.core.ecs import parse_entity_id
 from bunnyland.core.events import DomainEvent, EventVisibility
-from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_character
+from bunnyland.core.handlers import (
+    HandlerContext,
+    HandlerResult,
+    planned,
+    rejected,
+    require_character,
+)
+from bunnyland.core.mutations import MutationPlan, SetComponent
 from bunnyland.prompts.context import ComponentPromptContext, PromptPerspective
 from pydantic.dataclasses import dataclass
 from relics import Component, Entity, World
@@ -171,15 +178,19 @@ class SurveyRegionHandler:
 
         survey = survey_region(ctx.world, map_component, str(room.id), radius)
         summary = survey_summary(survey)
-        replace_component(
-            character,
-            LastSurveyComponent(
-                origin_room_id=str(room.id),
-                room_count=len(survey.room_ids),
-                summary=summary,
+        return planned(
+            MutationPlan(
+                (
+                    SetComponent(
+                        character.id,
+                        LastSurveyComponent(
+                            origin_room_id=str(room.id),
+                            room_count=len(survey.room_ids),
+                            summary=summary,
+                        ),
+                    ),
+                )
             ),
-        )
-        return ok(
             RegionSurveyedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.PRIVATE,

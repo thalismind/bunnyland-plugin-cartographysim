@@ -12,6 +12,7 @@ from bunnyland.core import (
 from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.handlers import HandlerContext
+from conftest import execute_handler
 
 from bunnyland_cartographysim import (
     ChartedRoom,
@@ -66,8 +67,8 @@ def _cmd(character_id, payload):
 
 
 def _share(actor, sharer_id, recipient_id):
-    return ShareMapHandler().execute(
-        _ctx(actor), _cmd(sharer_id, {"recipient_id": str(recipient_id)})
+    return execute_handler(
+        ShareMapHandler(), _ctx(actor), _cmd(sharer_id, {"recipient_id": str(recipient_id)})
     )
 
 
