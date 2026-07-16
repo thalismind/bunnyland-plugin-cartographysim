@@ -11,7 +11,7 @@ map it. The incident entity is placed in the frontier room and reuses the core
 
 from __future__ import annotations
 
-from bunnyland.core import IdentityComponent, RoomComponent
+from bunnyland.core import IdentityComponent, RoomComponent, container_of
 from bunnyland.core.ecs import parse_entity_id, spawn_entity
 from bunnyland.core.edges import ContainmentMode, Contains
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
@@ -29,8 +29,9 @@ def _incident_room_ids(world: World) -> set[str]:
     ids: set[str] = set()
     for entity in world.query().with_all([IncidentComponent]).execute_entities():
         incident = entity.get_component(IncidentComponent)
-        if incident.kind == INCIDENT_KIND and incident.room_id is not None:
-            ids.add(incident.room_id)
+        room_id = container_of(entity)
+        if incident.kind == INCIDENT_KIND and room_id is not None:
+            ids.add(str(room_id))
     return ids
 
 
@@ -70,7 +71,6 @@ def stage_uncharted_region_incident(
                 kind=INCIDENT_KIND,
                 budget_spent=0.0,
                 started_at_epoch=epoch,
-                room_id=str(room.id),
             ),
         ],
     )

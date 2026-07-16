@@ -5,6 +5,7 @@ from bunnyland.core import (
     IdentityComponent,
     RoomComponent,
     WorldActor,
+    container_of,
     spawn_entity,
 )
 from bunnyland.core.ecs import replace_component
@@ -81,7 +82,7 @@ def test_stage_incident_spawns_a_core_incident_in_the_room():
     incident, event = stage_uncharted_region_incident(actor.world, EPOCH, room)
     comp = incident.get_component(IncidentComponent)
     assert comp.kind == INCIDENT_KIND
-    assert comp.room_id == str(room.id)
+    assert container_of(incident) == room.id
     assert isinstance(event, IncidentStartedEvent)
     assert event.kind == INCIDENT_KIND
     assert event.room_id_started == str(room.id)
